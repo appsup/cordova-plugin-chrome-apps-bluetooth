@@ -235,12 +235,30 @@ public class ChromeBluetooth extends CordovaPlugin {
     callbackContext.success(results);
   }
 
-  private void startDiscovery(CallbackContext callbackContext) {
+  private void startDiscovery(CordovaArgs args, CallbackContext callbackContext) {
+
+    String scanMode = args.getJSONObject(0).optString("scanMode", "low_latency");
+    String disableLe = args.getJSONObject(0).optBoolean("disableLe");
+    String disableNonLe = args.getJSONObject(0).optBoolean("disableNonLe");
+
+    int mode;
+    switch (scanMode) {
+      case "low_power":
+        mode = ScanSettings.SCAN_MODE_LOW_POWER;
+        break;
+      case "balanced":
+        mode = ScanSettings.SCAN_MODE_BALANCED;
+        break;
+      case "low_latency":
+      default:
+        mode = ScanSettings.SCAN_MODE_LOW_LATENCY;
+        break;
+    }
 
     ScanSettings settings = new ScanSettings.Builder()
         .setCallbackType(
             ScanSettings.CALLBACK_TYPE_FIRST_MATCH | ScanSettings.CALLBACK_TYPE_MATCH_LOST)
-        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+        .setScanMode(mode)
         .build();
 
     if (isLeScanning && bluetoothAdapter.isDiscovering()) {
@@ -259,11 +277,15 @@ public class ChromeBluetooth extends CordovaPlugin {
       bluetoothAdapter.cancelDiscovery();
     }
 
-    isLeScanning = true;
-    leScanner.startScan(Collections.EMPTY_LIST, settings, leScanCallback);
+    if (!disableLe) {
+      isLeScanning = true;
+      leScanner.startScan(Collections.EMPTY_LIST, settings, leScanCallback);
+    }
 
-    isDiscovering = true;
-    bluetoothAdapter.startDiscovery();
+    if (!disableNonLe) {
+      isDiscovering = true;
+      bluetoothAdapter.startDiscovery();
+    }
     callbackContext.success();
     sendAdapterStateChangedEvent();
   }

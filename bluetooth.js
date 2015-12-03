@@ -39,8 +39,8 @@ exports.getDevices = function(callback) {
     exec(win, fail(callback), 'ChromeBluetooth', 'getDevices', []);
 };
 
-exports.startDiscovery = function(callback) {
-    exec(callback, fail(callback), 'ChromeBluetooth', 'startDiscovery', []);
+exports.startDiscovery = function(callback, options) {
+    exec(callback, fail(callback), 'ChromeBluetooth', 'startDiscovery', [options]);
 };
 
 exports.stopDiscovery = function(callback) {
