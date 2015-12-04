@@ -76,7 +76,7 @@ public class ChromeBluetooth extends CordovaPlugin {
     } else if ("getDevices".equals(action)) {
       getDevices(callbackContext);
     } else if ("startDiscovery".equals(action)) {
-      startDiscovery(callbackContext);
+      startDiscovery(args, callbackContext);
     } else if ("stopDiscovery".equals(action)) {
       stopDiscovery(callbackContext);
     } else if ("registerBluetoothEvents".equals(action)) {
@@ -237,22 +237,24 @@ public class ChromeBluetooth extends CordovaPlugin {
 
   private void startDiscovery(CordovaArgs args, CallbackContext callbackContext) {
 
-    String scanMode = args.getJSONObject(0).optString("scanMode", "low_latency");
-    String disableLe = args.getJSONObject(0).optBoolean("disableLe");
-    String disableNonLe = args.getJSONObject(0).optBoolean("disableNonLe");
+    String scanMode = "low_latency";
+    boolean disableLe = false;
+    boolean disableNonLe = false;
+
+    JSONObject obj = args.optJSONObject(0);
+    if (obj!=null) {
+      scanMode = obj.optString("scanMode", "low_latency");
+      disableLe = obj.optBoolean("disableLe");
+      disableNonLe = obj.optBoolean("disableNonLe");
+    }
 
     int mode;
-    switch (scanMode) {
-      case "low_power":
-        mode = ScanSettings.SCAN_MODE_LOW_POWER;
-        break;
-      case "balanced":
-        mode = ScanSettings.SCAN_MODE_BALANCED;
-        break;
-      case "low_latency":
-      default:
-        mode = ScanSettings.SCAN_MODE_LOW_LATENCY;
-        break;
+    if ("low_power".equals(scanMode)) {
+      mode = ScanSettings.SCAN_MODE_LOW_POWER;
+    } else if ("balanced".equals(scanMode)) {
+      mode = ScanSettings.SCAN_MODE_BALANCED;
+    } else {
+      mode = ScanSettings.SCAN_MODE_LOW_LATENCY;
     }
 
     ScanSettings settings = new ScanSettings.Builder()
